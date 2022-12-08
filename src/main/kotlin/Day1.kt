@@ -21,17 +21,17 @@ class Day1 {
         return inputs
     }
 
-    fun solve1(): Int {
-        val inputs = getInputs()
-        return inputs.map { it.sum() }.max()
+    fun solve1(inputs: ArrayList<ArrayList<Int>>): Int {
+        return inputs.maxOfOrNull { it.sum() }!!
     }
 
-    fun solve2(): Int {
-        val inputs = getInputs()
+    fun solve2(inputs: ArrayList<ArrayList<Int>>): Int {
         return inputs.map { it.sum() }.sortedDescending().take(3).sum()
     }
 }
 
 fun main() {
-    println(Day1().solve2())
+    val obj = Day1()
+    val inputs = obj.getInputs()
+    println(obj.solve2(inputs))
 }
