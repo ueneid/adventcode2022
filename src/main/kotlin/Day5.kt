@@ -62,14 +62,9 @@ class Day5 {
 
     fun solve2(stacks: List<ArrayDeque<Char>>, commands: List<Command>): String {
         commands.forEachIndexed { _, (value, from, to) ->
-            val removed = (0 until value).map {_ ->
-                stacks[from - 1].removeLast()
-            }
-            stacks[to - 1] += removed.reversed()
+            stacks[to - 1] += (0 until value).map { stacks[from - 1].removeLast() }.reversed()
         }
-        return stacks.map {
-            it.removeLast()
-        }.joinToString("")
+        return stacks.map { it.removeLast() }.joinToString("")
     }
 }
 
