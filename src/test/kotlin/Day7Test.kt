@@ -49,8 +49,8 @@ internal class Day7Test {
             8033020 d.log
             5626152 d.ext
             7214296 k
-        """.trimIndent()
-        assertEquals("CMZ", obj.solve1(input))
+        """.trimIndent().split("\n")
+        assertEquals(95437, obj.solve1(ArrayDeque(input)))
     }
 
     @Test
@@ -80,6 +80,7 @@ internal class Day7Test {
             8033020 d.log
             5626152 d.ext
             7214296 k
-        """.trimIndent()
-        assertEquals("CMZ", obj.solve1(input))
+        """.trimIndent().split("\n")
+        assertEquals(24933642, obj.solve2(ArrayDeque(input)))
+    }
 }
