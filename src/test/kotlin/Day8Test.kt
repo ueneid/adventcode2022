@@ -44,7 +44,7 @@ internal class Day8Test {
     }
 
     private fun generateInput2(): Stream<Arguments> {
-        return _generateInput(2)
+        return _generateInput(8)
     }
 
     @ParameterizedTest
