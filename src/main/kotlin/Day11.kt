@@ -2,31 +2,31 @@ class Day11 {
 
     class Monkey(
         var itemList: MutableList<Int>,
-        var operationFunction: (Int) -> Int,
-        var divideFunction: (Int) -> Int,
-        var next: List<Int>,
+        var operationPair: Pair<Char, String>,
+        var divible: Int,
+        var destMonkeys: List<Int>,
     ) {
         var inspectCount = 0
+
+        fun operate(worryLevel: Int): Int {
+            val (op, opValue) = operationPair
+            val v = if (opValue == "old") worryLevel else opValue.toInt()
+            return when (op) {
+                '+' -> worryLevel + v
+                '-' -> worryLevel - v
+                '*' -> worryLevel * v
+                '/' -> worryLevel / v
+                else -> worryLevel
+            }
+        }
+
+        fun isDivisible(worryLevel: Int): Boolean {
+            return worryLevel % divible == 0
+        }
     }
 
     fun getInputs(): List<Monkey> {
         val input = mutableListOf<Monkey>()
-        var count = 0
-        val operationFunction = { op: Char, value: String ->
-            { old: Int ->
-                val v = if (value == "old") old else value.toInt()
-                when (op) {
-                    '+' -> old + v
-                    '-' -> old - v
-                    '*' -> old * v
-                    '/' -> old / v
-                    else -> old
-                }
-            }
-        }
-        val devideFunction = { value: Int ->
-            { level: Int -> level % value }
-        }
         val regexList = listOf<Regex>(
 //            """Monkey (\d+)""".toRegex(),
             """Starting items: ([0-9, ]+)""".toRegex(),
@@ -51,7 +51,7 @@ class Day11 {
                     ?: throw IllegalArgumentException()
                 val falseMonkey = regexList[4].matchEntire(lines[4])?.groups?.get(1)?.value?.toInt()
                     ?: throw IllegalArgumentException()
-                val monkey = Monkey(itemList, operationFunction(op[0], value), devideFunction(divValue), listOf(trueMonkey, falseMonkey))
+                val monkey = Monkey(itemList, Pair(op[0], value), divValue, listOf(trueMonkey, falseMonkey))
                 input.add(monkey)
                 IO.readStr()
             }
@@ -64,24 +64,15 @@ class Day11 {
     fun solve1(input: List<Monkey>): Int {
         repeat(20) {
             for ((i, monkey) in input.withIndex()) {
-//                println("Monkey $i")
-                while (true) {
-                    if (monkey.itemList.isEmpty()) {
-                        break
-                    }
+                while (monkey.itemList.isNotEmpty()) {
                     val item = monkey.itemList.removeFirst()
                     monkey.inspectCount++
-                    val multiplied = monkey.operationFunction(item)
+                    val multiplied = monkey.operate(item)
                     val bored = multiplied / 3
-//                    println("  Monkey inspects an item with a worry level of $item")
-//                    println("    Worry level is multiplied to $multiplied")
-//                    println("    Monkey level is divided by 3 to $bored")
-                    if (monkey.divideFunction(bored) == 0) {
-//                        println("    Current worry level is divisible, throw to monkey ${monkey.next[0]}")
-                        input[monkey.next[0]].itemList.add(bored)
+                    if (monkey.isDivisible(bored)) {
+                        input[monkey.destMonkeys[0]].itemList.add(bored)
                     } else {
-//                        println("    Current worry level is not divisible, throw to monkey ${monkey.next[1]}")
-                        input[monkey.next[1]].itemList.add(bored)
+                        input[monkey.destMonkeys[1]].itemList.add(bored)
                     }
                 }
             }

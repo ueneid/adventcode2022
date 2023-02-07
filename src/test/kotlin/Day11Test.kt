@@ -11,10 +11,10 @@ internal class Day11Test {
     private val input = StandardInputStream()
     private val output = StandardOutputStream()
     private val inputs = listOf<Day11.Monkey>(
-        Day11.Monkey(mutableListOf(79, 98), { v: Int -> v * 19}, { v: Int -> v % 23 }, listOf(2, 3)),
-        Day11.Monkey(mutableListOf(54, 65, 75, 74), { v: Int -> v + 6}, { v: Int -> v % 19 }, listOf(2, 0)),
-        Day11.Monkey(mutableListOf(79, 60, 97), { v: Int -> v * v}, { v: Int -> v % 13 }, listOf(1, 3)),
-        Day11.Monkey(mutableListOf(74), { v: Int -> v + 3}, { v: Int -> v % 17 }, listOf(0, 1)),
+        Day11.Monkey(mutableListOf(79, 98), Pair('*', "19"), 23, listOf(2, 3)),
+        Day11.Monkey(mutableListOf(54, 65, 75, 74), Pair('+', "6"), 19, listOf(2, 0)),
+        Day11.Monkey(mutableListOf(79, 60, 97), Pair('*', "old"), 13, listOf(1, 3)),
+        Day11.Monkey(mutableListOf(74), Pair('+', "3"), 17, listOf(0, 1)),
 
     )
 
@@ -64,12 +64,8 @@ internal class Day11Test {
         input.inputln(lines)
         val obj = Day11()
         val out = obj.getInputs()
-        for ((i, monkey) in out.withIndex()) {
-            assertEquals(inputs[i].itemList, monkey.itemList)
-            assertEquals(inputs[i].next, monkey.next)
-            assertEquals(inputs[i].operationFunction(237), monkey.operationFunction(237))
-            assertEquals(inputs[i].divideFunction(237), monkey.divideFunction(237))
-
+        out.zip(inputs) { a, b ->
+            assertEquals(a, b)
         }
     }
 
