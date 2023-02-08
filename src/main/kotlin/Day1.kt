@@ -1,37 +1,26 @@
-class Day1 {
-    fun getInputs(): ArrayList<ArrayList<Int>> {
-        var inputs = ArrayList<ArrayList<Int>>()
-        var elfCalories = ArrayList<Int>()
-        try {
-            while (true) {
-                val calorie = IO.readStr()
-                if (calorie.isNotEmpty()) {
-                    elfCalories.add(calorie.toInt())
-                } else {
-                    inputs.add(elfCalories)
-                    elfCalories = ArrayList<Int>()
-                }
-            }
-        } catch (e: RuntimeException) { // EOF
-            inputs.add(elfCalories)
-            println(e.toString())
-        } catch (e: Exception) {
-            println(e.toString())
+class Day1(val inputs: List<String>) {
+    private val calories = parse()
+
+    private fun parse(): MutableList<List<Int>> {
+        val calories = mutableListOf<List<Int>>()
+        for (bunch in inputs) {
+            calories.add(bunch.split("\n").map { it.toInt() })
         }
-        return inputs
+        return calories
     }
 
-    fun solve1(inputs: ArrayList<ArrayList<Int>>): Int {
-        return inputs.maxOfOrNull { it.sum() }!!
+    fun solve1(): Int {
+        return calories.maxOfOrNull { it.sum() }!!
     }
 
-    fun solve2(inputs: ArrayList<ArrayList<Int>>): Int {
-        return inputs.map { it.sum() }.sortedDescending().take(3).sum()
+    fun solve2(): Int {
+        return calories.map { it.sum() }.sortedDescending().take(3).sum()
     }
 }
 
 fun main() {
-    val obj = Day1()
-    val inputs = obj.getInputs()
-    println(obj.solve2(inputs))
+    val input = Resource.resourceAsListOfBunchOfString("day1/input.txt")
+    val obj = Day1(input)
+    println(obj.solve1())
+    println(obj.solve2())
 }
