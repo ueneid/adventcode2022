@@ -1,19 +1,5 @@
-class Day4 {
-    fun getInputs(): ArrayList<String> {
-        val inputs = arrayListOf<String>()
-        try {
-            while (true) {
-                inputs.add(IO.readStr())
-            }
-        } catch (e: RuntimeException) { // EOF
-            println(e.toString())
-        } catch (e: Exception) {
-            println(e.toString())
-        }
-        return inputs
-    }
-
-    fun solve1(inputs: List<String>): Int {
+class Day4(val inputs: List<String>) {
+    fun solve1(): Int {
         return inputs.asSequence()
             .map { line ->
                 line.split(",")
@@ -23,7 +9,7 @@ class Day4 {
             .count { it[0] <= it[2] && it[3] <= it[1] || it[2] <= it[0] && it[1] <= it[3] }
     }
 
-    fun solve2(inputs: List<String>): Int {
+    fun solve2(): Int {
         return inputs.asSequence()
             .map { line ->
                 line.split(",")
@@ -36,8 +22,7 @@ class Day4 {
 }
 
 fun main() {
-    val obj = Day4()
-    val inputs = obj.getInputs()
-    println(obj.solve1(inputs))
-    println(obj.solve2(inputs))
+    val obj = Day4(Resource.resourceAsListOfString("day4/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }
