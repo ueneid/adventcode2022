@@ -1,19 +1,5 @@
-class Day3 {
-    fun getInputs(): ArrayList<String> {
-        val inputs = ArrayList<String>()
-        try {
-            while (true) {
-                inputs.add(IO.readStr())
-            }
-        } catch (e: RuntimeException) { // EOF
-            println(e.toString())
-        } catch (e: Exception) {
-            println(e.toString())
-        }
-        return inputs
-    }
-
-    fun getPriority(c: Char): Int {
+class Day3(val inputs: List<String>) {
+    private fun getPriority(c: Char): Int {
         return if (c.isUpperCase()) {
             c.lowercaseChar() - 'a' + 1 + 26
         } else {
@@ -21,7 +7,7 @@ class Day3 {
         }
     }
 
-    fun solve1(inputs: List<String>): Int {
+    fun solve1(): Int {
         return inputs.asSequence()
             .map { line -> line.chunked(line.length / 2) }
             .map { it.map { s -> s.toSet() } }
@@ -29,7 +15,7 @@ class Day3 {
             .sumOf { getPriority(it.first()) }
     }
 
-    fun solve2(inputs: List<String>): Int {
+    fun solve2(): Int {
         return inputs.asSequence().chunked(3)
             .map { it.map { s -> s.toSet() } }
             .map { it[0].intersect(it[1]).intersect(it[2]) }
@@ -38,8 +24,7 @@ class Day3 {
 }
 
 fun main() {
-    val obj = Day3()
-    val inputs = obj.getInputs()
-    println(obj.solve1(inputs))
-    println(obj.solve2(inputs))
+    val obj = Day3(Resource.resourceAsListOfString("day3/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }
