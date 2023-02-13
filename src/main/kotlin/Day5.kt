@@ -1,76 +1,75 @@
-class Day5 {
+class Day5(inputs: String) {
+    private val parsedInput = parse(inputs)
 
     data class Command(val value: Int, val from: Int, val to: Int)
 
-    data class Input(val stacks: List<ArrayDeque<Char>>, val commands: List<Command>)
+    data class Input(val stackList: List<ArrayDeque<Char>>, val commandList: List<Command>)
 
-    fun getInputs(): Input {
-        val inputs = arrayListOf<String>()
-        val stacks = arrayListOf<ArrayDeque<Char>>()
+    private fun parse(inputs: String): Input {
         val stackRegex = """(\[[A-Z]\]|\s{3})(?:\s|$)""".toRegex()
-        try {
-            while (true) {
-                val line = IO.readStr()
-                if (line.isBlank()) {
-                    break
-                }
-                val matches = stackRegex.findAll(line)
-                if (matches.count() == 0) {
-                    continue
-                }
-                if (stacks.size == 0) {
-                    for (i in 0 until matches.count()) {
-                        stacks.add(ArrayDeque<Char>())
+        val stackCrateRegex = """^\[[A-Z]\]$""".toRegex()
+        return inputs.split("\n\n").let { it ->
+            val stackList = it[0].split("\n").let { lines ->
+                val stackNumber = """(\d+)""".toRegex().findAll(lines.last()).count()
+                val stacks = List<ArrayDeque<Char>>(stackNumber) { ArrayDeque() }
+                lines.dropLast(1).forEach { line ->
+                    val matches = stackRegex.findAll(line)
+                    if (matches.count() == 0) {
+                        throw IllegalArgumentException("Invalid format for stacks: $matches")
+                    }
+                    matches.forEachIndexed { index, matchResult ->
+                        if (stackCrateRegex.matches(matchResult.groupValues[1])) {
+                            stacks[index].addFirst(matchResult.groupValues[1][1])
+                        }
                     }
                 }
-                matches.forEachIndexed { i, match ->
-                    if (match.value.contains("""[A-Z]""".toRegex())) {
-                        stacks[i].addFirst(match.value[1])
-                    }
-                }
+                stacks
             }
-        } catch (e: RuntimeException) { // EOF
-            println(e.toString())
-        }
 
-        val commands = ArrayList<Command>()
-        val commandRegex = """^move (\d+) from (\d+) to (\d+)$""".toRegex()
-        try {
-            while (true) {
-                val line = IO.readStr()
-                val (value, from, to) = commandRegex.matchEntire(line)?.destructured?.toList()?.map { it.toInt() }
-                    ?: throw IllegalArgumentException("Incorrect input line $line")
-                commands.add(Command(value, from, to))
+            val commandRegex = """^move (\d+) from (\d+) to (\d+)$""".toRegex()
+            val commandList = it[1].split("\n").map { line ->
+                val (value, from, to) = commandRegex.matchEntire(line)!!.destructured
+                Command(value.toInt(), from.toInt(), to.toInt())
             }
-        } catch (e: RuntimeException) {
-            println(e.toString())
-        }
 
-        return Input(stacks, commands)
+            Input(stackList, commandList)
+        }
     }
 
-    fun solve1(stacks: List<ArrayDeque<Char>>, commands: List<Command>): String {
-        commands.forEachIndexed { _, (value, from, to) ->
+    private fun clone(): Input {
+        val stackList = mutableListOf<ArrayDeque<Char>>().apply {
+            addAll(parsedInput.stackList.map { chars ->
+                val charQueue = ArrayDeque<Char>()
+                chars.forEach { charQueue.add(it) }
+                charQueue
+            })
+        }
+        return Input(stackList, parsedInput.commandList)
+    }
+
+    fun solve1(): String {
+        val (stackList, commandList) = clone()
+        commandList.forEachIndexed { _, (value, from, to) ->
             repeat(value) {
-                stacks[to - 1].add(stacks[from - 1].removeLast())
+                stackList[to - 1].add(stackList[from - 1].removeLast())
             }
         }
-        return stacks.map {
+        return stackList.map {
             it.removeLast()
         }.joinToString("")
     }
 
-    fun solve2(stacks: List<ArrayDeque<Char>>, commands: List<Command>): String {
-        commands.forEachIndexed { _, (value, from, to) ->
-            stacks[to - 1] += (0 until value).map { stacks[from - 1].removeLast() }.reversed()
+    fun solve2(): String {
+        val (stackList, commandList) = clone()
+        commandList.forEachIndexed { _, (value, from, to) ->
+            stackList[to - 1] += (0 until value).map { stackList[from - 1].removeLast() }.reversed()
         }
-        return stacks.map { it.removeLast() }.joinToString("")
+        return stackList.map { it.removeLast() }.joinToString("")
     }
 }
 
 fun main() {
-    val obj = Day5()
-    val (stacks, commands) = obj.getInputs()
-//    println(obj.solve1(stacks, commands))
-    println(obj.solve2(stacks, commands))
+    val obj = Day5(Resource.resourceAsText("day5/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }
