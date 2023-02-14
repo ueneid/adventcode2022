@@ -4,3 +4,7 @@ fun <T> List<T>.toPair(): Pair<T, T> {
     }
     return Pair(this[0], this[1])
 }
+
+fun <T> List<List<T>>.transpose(): List<List<T>> {
+    return List(this.first().size) { index -> this.map { row -> row[index] } }
+}
