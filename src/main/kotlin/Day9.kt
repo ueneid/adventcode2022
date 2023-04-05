@@ -1,7 +1,15 @@
 import kotlin.math.abs
 import kotlin.math.sign
 
-class Day9 {
+class Day9(inputs: List<String>) {
+    val commands = parse(inputs)
+
+    private fun parse(inputs: List<String>): List<Pair<String, Int>> {
+        return inputs.asSequence().map { line ->
+            val commands = line.split(" ")
+            Pair(commands[0], commands[1].toInt())
+        }.toList()
+    }
 
     enum class Direction {
         L, R, U, D
@@ -27,7 +35,7 @@ class Day9 {
             }
 //            println("== Initial State ==")
 //            println(this)
-            tailVisited.add(knots.last())
+            tailVisited.add(knots.last().copy())
         }
 
         override fun toString(): String {
@@ -38,10 +46,6 @@ class Day9 {
                 }
             }
             return newGrid.joinToString("\n") { it.joinToString("") } + "\n"
-        }
-
-        init {
-            tailVisited.add(knots.last().copy())
         }
 
         // I gave up the part2 and then referring to https://gist.github.com/xzec/76bcfd20688ff34407c95c2f4e8acb8c
@@ -104,37 +108,20 @@ class Day9 {
         operator fun minus(cell: Cell): Vector {
             return Vector(x - cell.x, y - cell.y)
         }
-
-        fun invertedMove(vec: Vector) {
-            this.x -= vec.x
-            this.y -= vec.y
-        }
     }
 
-    fun getInputs(): List<Pair<String, Int>> {
-        val input = mutableListOf<Pair<String, Int>>()
-        try {
-            while (true) {
-                input.add(IO.readStrings().zipWithNext { a, b -> Pair(a, b.toInt()) }.single())
-            }
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
-        }
-        return input
-    }
-
-    fun solve1(input: List<Pair<String, Int>>): Int {
+    fun solve1(): Int {
         val rope = Rope(2, 6, 6, Cell(0, 5))
-        for ((direction, times) in input) {
+        for ((direction, times) in commands) {
             rope.move(Direction.valueOf(direction), times)
         }
         return rope.getTailVisitedNum()
     }
 
-    fun solve2(input: List<Pair<String, Int>>): Int {
+    fun solve2(): Int {
 //        val rope = Rope(10, 6, 6, Cell(0, 5))
         val rope = Rope(10, 22, 27, Cell(12, 15))
-        for ((direction, times) in input) {
+        for ((direction, times) in commands) {
             rope.move(Direction.valueOf(direction), times)
         }
         return rope.getTailVisitedNum()
@@ -142,8 +129,7 @@ class Day9 {
 }
 
 fun main() {
-    val obj = Day9()
-    val input = obj.getInputs()
-//    println(obj.solve1(input))
-    println(obj.solve2(input))
+    val obj = Day9(Resource.resourceAsListOfString("day9/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }

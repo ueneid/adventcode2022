@@ -1,28 +1,11 @@
-class Day7 {
-
-    data class Command(val value: Int, val from: Int, val to: Int)
-
-    data class Input(val stacks: List<ArrayDeque<Char>>, val commands: List<Command>)
-
-    fun getInputs(): ArrayDeque<String> {
-        val inputs = ArrayDeque<String>()
-        try {
-            while (true) {
-                val line = IO.readStr()
-                inputs.add(line)
-            }
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
-        }
-
-        return inputs
-    }
+class Day7(inputs: List<String>) {
+    private val root = parse(inputs).apply { calcSize() }
 
     enum class FileType(val type: String) {
         FILE("file"), DIR("DIR"), DUMMY("DUMMY")
     }
 
-    class FileTree(val type: FileType, val name: String, var size: Int, val children: MutableList<FileTree>) {
+    private class FileTree(val type: FileType, val name: String, var size: Int, val children: MutableList<FileTree>) {
         constructor(type: Day7.FileType) : this(type, "", 0, mutableListOf())
         constructor(type: Day7.FileType, name: String) : this(type, name, 0, mutableListOf())
         constructor(type: Day7.FileType, name: String, size: Int) : this(type, name, size, mutableListOf())
@@ -39,42 +22,33 @@ class Day7 {
         }
     }
 
-    fun parse(input: List<String>): FileTree {
+    private fun parse(input: List<String>): FileTree {
         val fileTree = FileTree(FileType.DUMMY)
         val dirStack = ArrayDeque<FileTree>()
         dirStack.add(fileTree)
         var cur = fileTree
-        for (line in input) {
-            val splitted = line.split(" ")
-            when {
-                splitted[0] == "$" -> {
-                    when (splitted[1]) {
-                        "cd" -> {
-                            cur = if (splitted[2] == "..") {
-                                dirStack.removeLast()
-                                dirStack.last()
-                            } else {
-                                val d = FileTree(FileType.DIR, splitted[2])
-                                dirStack.last().children.add((d))
-                                dirStack.add(d)
-                                dirStack.last()
-                            }
-                        }
+        input
+            .asSequence()
+            .map { it.split(" ") }
+            .filterNot { it[0] == "dir" || it[1] == "ls" }
+            .forEach { commands ->
+                if (commands[0] == "$" && commands[1] == "cd") {
+                    if (commands[2] == "..") {
+                        dirStack.removeLast()
+                    } else {
+                        val d = FileTree(FileType.DIR, commands[2])
+                        dirStack.last().children.add(d)
+                        dirStack.add(d)
                     }
-                }
-
-                splitted[0].matches("""^\d+$""".toRegex()) -> {
-                    var f = FileTree(FileType.FILE, splitted[1], splitted[0].toInt())
-                    cur.children.add(f)
+                    cur = dirStack.last()
+                } else if (commands[0].matches("""^\d+$""".toRegex())) {
+                    cur.children.add(FileTree(FileType.FILE, commands[1], commands[0].toInt()))
                 }
             }
-        }
         return fileTree.children[0]
     }
 
-    fun solve1(input: List<String>): Int {
-        val root = parse(input)
-        root.calcSize()
+    fun solve1(): Int {
         val q = ArrayDeque<FileTree>()
         val lessThan10000 = mutableListOf<FileTree>()
         q.add(root)
@@ -94,9 +68,7 @@ class Day7 {
         return lessThan10000.sumOf { it.size }
     }
 
-    fun solve2(input: List<String>): Int {
-        val root = parse(input)
-        root.calcSize()
+    fun solve2(): Int {
         val requiredUnusedSpace = 30_000_000 - (70_000_000 - root.size)
         val q = ArrayDeque<FileTree>()
         var candidate = FileTree(FileType.DUMMY, "dummy", 70_000_000)
@@ -119,8 +91,7 @@ class Day7 {
 }
 
 fun main() {
-    val obj = Day7()
-    val input = obj.getInputs()
-//    println(obj.solve1(input))
-    println(obj.solve2(input))
+    val obj = Day7(Resource.resourceAsListOfString("day7/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }

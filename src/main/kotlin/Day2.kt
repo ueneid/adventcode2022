@@ -1,17 +1,8 @@
-class Day2 {
-    fun getInputs(): ArrayList<Pair<String, String>> {
-        val matches = ArrayList<Pair<String, String>>()
-        try {
-            while (true) {
-                val (first, second) = IO.readStrings()
-                matches.add(Pair(first, second))
-            }
-        } catch (e: RuntimeException) { // EOF
-            println(e.toString())
-        } catch (e: Exception) {
-            println(e.toString())
-        }
-        return matches
+class Day2(inputs: List<String>) {
+    private val matches = parse(inputs)
+
+    private fun parse(inputs: List<String>): List<Pair<String, String>> {
+        return inputs.map { it.split(" ").toPair() }
     }
 
     enum class Choice(s: String, val point: Int) {
@@ -61,7 +52,6 @@ class Day2 {
             override fun getChoiceByResult(s: Result): Choice {
                 return when (s) {
                     Result.WIN -> A
-
                     Result.DRAW -> C
                     Result.LOSE -> B
                 }
@@ -76,7 +66,7 @@ class Day2 {
         WIN(6), LOSE(0), DRAW(3);
     }
 
-    fun solve1(matches: ArrayList<Pair<String, String>>): Int {
+    fun solve1(): Int {
         val choiceMap = mapOf<String, Choice>(
             "X" to Choice.A, "Y" to Choice.B, "Z" to Choice.C
         )
@@ -90,7 +80,7 @@ class Day2 {
         return score
     }
 
-    fun solve2(matches: ArrayList<Pair<String, String>>): Int {
+    fun solve2(): Int {
         var score = 0
         val retMap = mapOf<String, Result>(
             "X" to Result.LOSE, "Y" to Result.DRAW, "Z" to Result.WIN
@@ -105,6 +95,8 @@ class Day2 {
 }
 
 fun main() {
-    val obj = Day2()
-    println(obj.solve2(obj.getInputs()))
+    val inputs = Resource.resourceAsListOfString("day2/input.txt")
+    val obj = Day2(inputs)
+    println(obj.solve1())
+    println(obj.solve2())
 }

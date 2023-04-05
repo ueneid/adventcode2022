@@ -1,17 +1,10 @@
 import kotlin.math.max
 
-class Day8 {
+class Day8(inputs: List<String>) {
+    private val treeGrid = parse(inputs)
 
-    fun getInputs(): List<List<Int>> {
-        val input = mutableListOf<List<Int>>()
-        try {
-            while (true) {
-                input.add(IO.readStr().toList().map { it.digitToInt() })
-            }
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
-        }
-        return input
+    private fun parse(inputs: List<String>): List<List<Int>> {
+        return inputs.map { it.toList().map { height -> height.digitToInt() } }
     }
 
     private fun isVisible(input: List<List<Int>>, i: Int, j: Int): Boolean {
@@ -32,12 +25,12 @@ class Day8 {
         }
     }
 
-    fun solve1(input: List<List<Int>>): Int {
-        val transposedInput = Util.transpose(input)
-        var count = input.size * input[0].size
-        for (i in 1 until input.size - 1) {
-            for (j in 1 until input[i].size - 1) {
-                if (!isVisible(input, i, j) && !isVisible(transposedInput, j, i)) {
+    fun solve1(): Int {
+        val transposedGrid = treeGrid.transpose()
+        var count = treeGrid.size * treeGrid[0].size
+        for (i in 1 until treeGrid.size - 1) {
+            for (j in 1 until treeGrid[i].size - 1) {
+                if (!isVisible(treeGrid, i, j) && !isVisible(transposedGrid, j, i)) {
                     count -= 1
                 }
             }
@@ -45,12 +38,12 @@ class Day8 {
         return count
     }
 
-    fun solve2(input: List<List<Int>>): Int {
-        val transposedInput = Util.transpose(input)
+    fun solve2(): Int {
+        val transposedGrid = treeGrid.transpose()
         var maxScore = 0
-        for (i in 1 until input.size - 1) {
-            for (j in 1 until input[i].size - 1) {
-                maxScore = max(maxScore, calcScenicScore(input, i, j) * calcScenicScore(transposedInput, j, i))
+        for (i in 1 until treeGrid.size - 1) {
+            for (j in 1 until treeGrid[i].size - 1) {
+                maxScore = max(maxScore, calcScenicScore(treeGrid, i, j) * calcScenicScore(transposedGrid, j, i))
             }
         }
         return maxScore
@@ -58,8 +51,7 @@ class Day8 {
 }
 
 fun main() {
-    val obj = Day8()
-    val input = obj.getInputs()
-//    println(obj.solve1(input))
-    println(obj.solve2(input))
+    val obj = Day8(Resource.resourceAsListOfString("day8/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }

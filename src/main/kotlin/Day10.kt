@@ -1,15 +1,12 @@
-class Day10 {
+class Day10(inputs: List<String>) {
+    private val commandSets = parse(inputs)
 
-    fun getInputs(): List<List<String>> {
-        val input = mutableListOf<List<String>>()
-        try {
-            while (true) {
-                input.add(IO.readStrings())
+    private fun parse(inputs: List<String>): List<CommandSet> {
+        return inputs.asSequence().map { line ->
+            line.split(" ").let {
+                CommandSet(Command.valueOf(it[0].uppercase()), it.getOrElse(1) { "0" }.toInt())
             }
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
-        }
-        return input
+        }.toList()
     }
 
     enum class Command() {
@@ -29,54 +26,44 @@ class Day10 {
         private var register = 1
         private var cycleCount = 0
 
-        fun execute(commandSet: CommandSet, callbackPerCycle: (cycleCount: Int, register: Int) -> Unit) {
-            val (command, value) = commandSet
-            repeat(command.getCycle()) {
-                cycleCount++
-                callbackPerCycle(cycleCount, register)
+        fun execute(commandSets: List<CommandSet>, callbackPerCycle: (cycleCount: Int, register: Int) -> Unit) {
+            commandSets.forEach { commandSet ->
+                val (command, value) = commandSet
+                repeat(command.getCycle()) {
+                    cycleCount++
+                    callbackPerCycle(cycleCount, register)
+                }
+                register += value
             }
-            register += value
-            println("$cycleCount: $register")
         }
     }
 
-    fun solve1(input: List<List<String>>): Int {
+    fun solve1(): Int {
         var sumSignalStrength = 0
-        val cpu = CPU()
-        var callback = fun(cycleCount: Int, register: Int) {
+        CPU().execute(commandSets) { cycleCount: Int, register: Int ->
             if ((cycleCount + 20) % 40 == 0) {
                 sumSignalStrength += cycleCount * register
             }
         }
-        input.map { CommandSet(Command.valueOf(it[0].uppercase()), it.getOrElse(1) { "0" }.toInt()) }.forEach {
-            cpu.execute(it, callback)
-        }
         return sumSignalStrength
     }
 
-    fun solve2(input: List<List<String>>): List<String> {
-        val lit = "#"
-        val dark = "."
-        val cpu = CPU()
+    fun solve2(): List<String> {
         val output = MutableList<String>(6) { "" }
-        val callback = fun(cycleCount: Int, register: Int) {
+        CPU().execute(commandSets) { cycleCount: Int, register: Int ->
             val spriteIndex = (cycleCount - 1) % 40
             output[(cycleCount - 1) / 40] += if (spriteIndex >= register - 1 && spriteIndex <= register + 1) {
-                lit
+                "#"
             } else {
-                dark
+                "."
             }
-        }
-        input.map { CommandSet(Command.valueOf(it[0].uppercase()), it.getOrElse(1) { "0" }.toInt()) }.forEach {
-            cpu.execute(it, callback)
         }
         return output
     }
 }
 
 fun main() {
-    val obj = Day10()
-    val input = obj.getInputs()
-//    println(obj.solve1(input))
-    println(obj.solve2(input).joinToString("\n"))
+    val obj = Day10(Resource.resourceAsListOfString("day10/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2().joinToString("\n"))
 }
