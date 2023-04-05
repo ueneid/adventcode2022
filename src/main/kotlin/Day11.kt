@@ -1,112 +1,93 @@
-class Day11 {
+class Day11(inputs: List<String>) {
+    private val monkeys = parse(inputs)
 
     class Monkey(
-        var itemList: MutableList<Long>,
-        var operationPair: Pair<Char, String>,
+        var itemList: ArrayDeque<Long>,
+        private var operationPair: Pair<String, String>,
         var divisible: Long,
-        var destMonkeys: List<Int>,
+        private var destMonkeys: List<Int>,
     ) {
         var inspectCount = 0L
 
-        fun operate(worryLevel: Long): Long {
+        fun calcNewWorryLevel(worryLevel: Long): Long {
             val (op, opValue) = operationPair
             val v = if (opValue == "old") worryLevel else opValue.toLong()
             return when (op) {
-                '+' -> worryLevel + v
-                '-' -> worryLevel - v
-                '*' -> worryLevel * v
-                '/' -> worryLevel / v
+                "+" -> worryLevel + v
+                "-" -> worryLevel - v
+                "*" -> worryLevel * v
+                "/" -> worryLevel / v
                 else -> worryLevel
             }
         }
 
-        fun isDivisible(worryLevel: Long): Boolean {
+        private fun isDivisible(worryLevel: Long): Boolean {
             return worryLevel % divisible == 0L
         }
-    }
 
-    fun getInputs(): List<Monkey> {
-        val input = mutableListOf<Monkey>()
-        val regexList = listOf<Regex>(
-//            """Monkey (\d+)""".toRegex(),
-            """Starting items: ([0-9, ]+)""".toRegex(),
-            """Operation: new = old (.+) (\d+|old)""".toRegex(),
-            """Test: divisible by (\d+)""".toRegex(),
-            """If true: throw to monkey (\d+)""".toRegex(),
-            """If false: throw to monkey (\d+)""".toRegex(),
-        )
-        try {
-            while (true) {
-                IO.readStr()
-                val lines = listOf(
-                    IO.readStr(), IO.readStr(), IO.readStr(), IO.readStr(), IO.readStr()
-                ).map { it.trim() }
-                val itemList = regexList[0].matchEntire(lines[0])?.groups?.get(1)?.value?.split(", ")?.map { it.toLong() }?.toMutableList()
-                    ?: throw IllegalArgumentException()
-                val (op, value) = regexList[1].matchEntire(lines[1])?.destructured
-                    ?: throw IllegalArgumentException()
-                val divValue = regexList[2].matchEntire(lines[2])?.groups?.get(1)?.value?.toLong()
-                    ?: throw IllegalArgumentException()
-                val trueMonkey = regexList[3].matchEntire(lines[3])?.groups?.get(1)?.value?.toInt()
-                    ?: throw IllegalArgumentException()
-                val falseMonkey = regexList[4].matchEntire(lines[4])?.groups?.get(1)?.value?.toInt()
-                    ?: throw IllegalArgumentException()
-                val monkey = Monkey(itemList, Pair(op[0], value), divValue, listOf(trueMonkey, falseMonkey))
-                input.add(monkey)
-                IO.readStr()
+        fun getNextMonkeyIndex(worryLevel: Long): Int {
+            return if (this.isDivisible(worryLevel)) {
+                this.destMonkeys[0]
+            } else {
+                this.destMonkeys[1]
             }
-        } catch (e: RuntimeException) {
-            e.printStackTrace()
         }
-        return input
     }
 
-    fun solve1(input: List<Monkey>): Long {
+    private fun parse(inputs: List<String>): List<Monkey> {
+        val pat = """
+Monkey \d+:
+  Starting items: ([0-9, ]+)
+  Operation: new = old (.+) (\d+|old)
+  Test: divisible by (\d+)
+    If true: throw to monkey (\d+)
+    If false: throw to monkey (\d+)
+        """.trim().toRegex()
+        return inputs.map { bunch ->
+            pat.matchEntire(bunch)!!.destructured.let {
+                Monkey(
+                    ArrayDeque(it.component1().split(", ").map(String::toLong)),
+                    Pair(it.component2(), it.component3()),
+                    it.component4().toLong(),
+                    listOf(it.component5().toInt(), it.component6().toInt())
+                )
+            }
+        }
+    }
+
+    fun solve1(): Long {
         repeat(20) {
-            for ((i, monkey) in input.withIndex()) {
+            monkeys.forEach { monkey ->
                 while (monkey.itemList.isNotEmpty()) {
-                    val item = monkey.itemList.removeFirst()
                     monkey.inspectCount++
-                    val multiplied = monkey.operate(item)
-                    val bored = multiplied / 3
-                    if (monkey.isDivisible(bored)) {
-                        input[monkey.destMonkeys[0]].itemList.add(bored)
-                    } else {
-                        input[monkey.destMonkeys[1]].itemList.add(bored)
-                    }
+                    val item = monkey.itemList.removeFirst()
+                    val newWorryLevel = monkey.calcNewWorryLevel(item) / 3
+                    monkeys[monkey.getNextMonkeyIndex(newWorryLevel)].itemList.add(newWorryLevel)
                 }
             }
         }
-        val top2 = input.sortedByDescending { it.inspectCount }.take(2).map { it.inspectCount }
-        return top2[0] * top2[1]
+        return monkeys.map { it.inspectCount }.sorted().takeLast(2).reduce(Long::times)
     }
 
-    fun solve2(input: List<Monkey>): Long {
+    fun solve2(): Long {
         // I totally don't understand the purpose of this part, so referred https://yonatankarp.com/advent-of-code-2022-day-11-kotlin-edition
-        val commonMultiple = input.map { monkey -> monkey.divisible }.reduce(Long::times)
+        val commonMultiple = monkeys.map { monkey -> monkey.divisible }.reduce(Long::times)
         repeat(10000) {
-            for ((i, monkey) in input.withIndex()) {
+            monkeys.forEach { monkey ->
                 while (monkey.itemList.isNotEmpty()) {
-                    val item = monkey.itemList.removeFirst()
                     monkey.inspectCount++
-                    val multiplied = monkey.operate(item)
-                    val newLevel = multiplied % commonMultiple
-                    if (monkey.isDivisible(newLevel)) {
-                        input[monkey.destMonkeys[0]].itemList.add(newLevel)
-                    } else {
-                        input[monkey.destMonkeys[1]].itemList.add(newLevel)
-                    }
+                    val item = monkey.itemList.removeFirst()
+                    val newWorryLevel = monkey.calcNewWorryLevel(item) % commonMultiple
+                    monkeys[monkey.getNextMonkeyIndex(newWorryLevel)].itemList.add(newWorryLevel)
                 }
             }
         }
-        val top2 = input.sortedByDescending { it.inspectCount }.take(2).map { it.inspectCount }
-        return top2[0] * top2[1]
+        return monkeys.map { it.inspectCount }.sorted().takeLast(2).reduce(Long::times)
     }
 }
 
 fun main() {
-    val obj = Day11()
-    val input = obj.getInputs()
-//    println(obj.solve1(input))
-    println(obj.solve2(input))
+    val obj = Day11(Resource.resourceAsListOfBunchOfString("day11/input.txt"))
+    println(obj.solve1())
+    println(obj.solve2())
 }
